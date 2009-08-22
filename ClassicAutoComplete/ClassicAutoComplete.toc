@@ -1,0 +1,8 @@
+## Interface: 30200
+## Title: ClassicAutoComplete
+## Author: Kring
+## Notes: Restores the classic auto complete functionality and adds your alts to the autocomplete list
+## SavedVariables: ClassicAutoComplete_MyChars
+## OptionalDeps:
+## Dependencies:
+ClassicAutoComplete.xml
