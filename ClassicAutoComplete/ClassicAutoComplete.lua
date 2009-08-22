@@ -1,5 +1,5 @@
 
-local ClassicAutoComplete_Version = 2
+local ClassicAutoComplete_Version = 3
 local ClassicAutoComplete_loaded = false
 
 local ClassicAutoComplete_origGetAutoCompleteResults = nil
@@ -36,6 +36,7 @@ function ClassicAutoComplete_OnChar(s)
 
 	-- to keep the new auto complete functionality
 	AutoComplete_Update(s, name, completedNameRemainderPosition)
+	SendMailFrame_Update()
 end
 
 function ClassicAutoComplete_GetAutoCompleteResults(t, include, exclude, maxResults, ...)
