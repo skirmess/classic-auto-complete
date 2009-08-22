@@ -1,5 +1,5 @@
 
-local ClassicAutoComplete_Version = 1
+local ClassicAutoComplete_Version = 2
 local ClassicAutoComplete_loaded = false
 
 local ClassicAutoComplete_origGetAutoCompleteResults = nil
@@ -43,9 +43,19 @@ function ClassicAutoComplete_GetAutoCompleteResults(t, include, exclude, maxResu
 	local result = { ClassicAutoComplete_origGetAutoCompleteResults(t, include, exclude, maxResults, ...) }
 
 	-- AUTOCOMPLETE_FLAG_FRIEND 	 0x00000004 	 Players on your friends list 
+	local k, v, ik, iv
 	if ( ClassicAutoComplete_hasbit(include, 3) ) then
 		for k, v in ipairs { ClassicAutoComplete_GetAutoCompleteAltResults(t) } do
-			table.insert(result, v)
+			local found = 0
+			for ik, iv in ipairs(result) do
+				if ( v == iv ) then
+					found = 1
+				end
+			end
+
+			if ( found == 0 ) then
+				table.insert(result, v)
+			end
 		end
 	end
 
