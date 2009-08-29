@@ -1,5 +1,7 @@
 
-local ClassicAutoComplete_Version = 3
+-- Copyright (c) 2009, Sven Kirmess
+
+local ClassicAutoComplete_Version = 4
 local ClassicAutoComplete_loaded = false
 
 local ClassicAutoComplete_origGetAutoCompleteResults = nil
@@ -9,7 +11,7 @@ local ClassicAutoComplete_MyAlts = { }
 -- http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html
 function ClassicAutoComplete_hasbit(x, p)
 	return x % (p + p) >= p
-end 
+end
 
 function ClassicAutoComplete_OnChar(s)
 
@@ -21,8 +23,8 @@ function ClassicAutoComplete_OnChar(s)
 
 	local completedName = (
 		ClassicAutoComplete_GetAutoCompleteAltResults(name) or
-		ClassicAutoComplete_origGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or 
-		ClassicAutoComplete_origGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or 
+		ClassicAutoComplete_origGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or
+		ClassicAutoComplete_origGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or
 		ClassicAutoComplete_origGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or
 		ClassicAutoComplete_origGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or
 		ClassicAutoComplete_origGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ALL, 0, 1)
@@ -43,7 +45,7 @@ function ClassicAutoComplete_GetAutoCompleteResults(t, include, exclude, maxResu
 
 	local result = { ClassicAutoComplete_origGetAutoCompleteResults(t, include, exclude, maxResults, ...) }
 
-	-- AUTOCOMPLETE_FLAG_FRIEND 	 0x00000004 	 Players on your friends list 
+	-- AUTOCOMPLETE_FLAG_FRIEND 	 0x00000004 	 Players on your friends list
 	local k, v, ik, iv
 	if ( ClassicAutoComplete_hasbit(include, 3) ) then
 		for k, v in ipairs { ClassicAutoComplete_GetAutoCompleteAltResults(t) } do
