@@ -1,7 +1,7 @@
 
 -- Copyright (c) 2009, Sven Kirmess
 
-local ClassicAutoComplete_Version = 4
+local ClassicAutoComplete_Version = 5
 local ClassicAutoComplete_loaded = false
 
 local ClassicAutoComplete_origGetAutoCompleteResults = nil
@@ -11,6 +11,118 @@ local ClassicAutoComplete_MyAlts = { }
 -- http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html
 function ClassicAutoComplete_hasbit(x, p)
 	return x % (p + p) >= p
+end
+
+function ClassicAutoComplete_PrintableName(name)
+
+	if ( name == nil ) then
+		return nil
+	end
+
+	if ( name == "" ) then
+		return nil
+	end
+
+	if ( string.match(string.lower(name), "[^a-z]") ~= nil ) then
+		return nil
+	end
+
+	if ( string.len(name) < 2 ) then
+		return string.upper(name)
+	end
+
+	return string.upper(string.sub(name, 1, 1)) .. string.lower(string.sub(name, 2))
+end
+
+function ClassicAutoComplete_Usage()
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("%s help", SLASH_CLASSICAUTOCOMPLETE1))
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("%s list   (list the content of your alt list)", SLASH_CLASSICAUTOCOMPLETE1))
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("%s add <name>   (add a character to your alt list)", SLASH_CLASSICAUTOCOMPLETE1))
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("%s remove <name>   (remove or unblock a character from your alt list)", SLASH_CLASSICAUTOCOMPLETE1))
+	DEFAULT_CHAT_FRAME:AddMessage(string.format("%s block <name>   (block a character from being added to your alt list)", SLASH_CLASSICAUTOCOMPLETE1))
+end
+
+local function ClassicAutoComplete_CommandHandler(msg, editbox)
+
+	local myName = UnitName("player")
+	local argument = { }
+	local k, v
+
+	for v in string.gmatch(msg, "[^%s]+") do
+		tinsert(argument, v)
+	end
+
+	-- help
+	if ( argument[1] == "help" ) then
+		ClassicAutoComplete_Usage()
+
+		return
+	end
+
+	-- list
+	if ( argument[1] == "list" ) then
+
+		for k, v in pairs(ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName]) do
+			local s = ""
+			if ( v == 0 ) then
+				s = " (added)"
+			elseif ( v == -1 ) then
+				s = " (blocked)"
+			end
+			DEFAULT_CHAT_FRAME:AddMessage(string.format("%s%s", k, s))
+		end
+
+		return
+	end
+
+	-- add
+	-- block
+	-- remove
+	if (( argument[1] == "add" ) or
+	    ( argument[1] == "block" ) or
+	    ( argument[1] == "remove" )) then
+
+		local name = ClassicAutoComplete_PrintableName(argument[2])
+		if ( name == nil ) then
+			ClassicAutoComplete_Usage()
+
+			return
+		end
+
+		if (( argument[1] == "add" ) or ( argument[1] == "block" )) then
+			-- add or block
+
+			if (argument[1] == "add" ) then
+				-- add
+				ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][name] = 0
+				if ( name ~= myName ) then
+					ClassicAutoComplete_MyAlts[name] = 1
+				end
+
+				DEFAULT_CHAT_FRAME:AddMessage(string.format("Character \"%s\" is now considered an alt of yours.", name))
+			elseif ( argument[1] == "block" ) then
+				-- block
+				ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][name] = -1
+				ClassicAutoComplete_MyAlts[name] = nil
+
+				DEFAULT_CHAT_FRAME:AddMessage(string.format("Alt \"%s\" is now blocked.", name))
+			end
+		else
+			-- remove
+			if ( name == myName ) then
+				ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][myName] = now
+			else
+				ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][name] = nil
+			end
+			ClassicAutoComplete_MyAlts[name] = nil
+
+			DEFAULT_CHAT_FRAME:AddMessage(string.format("Alt \"%s\" is now removed (and no longer blocked if it was blocked).", name))
+		end
+
+		return
+	end
+
+	ClassicAutoComplete_Usage()
 end
 
 function ClassicAutoComplete_OnChar(s)
@@ -89,8 +201,6 @@ function ClassicAutoComplete_GetAutoCompleteAltResults(t)
 	return unpack(result)
 end
 
-
-
 function ClassicAutoComplete_initialize()
 
 	if ( ClassicAutoComplete_loaded ) then
@@ -111,12 +221,14 @@ function ClassicAutoComplete_initialize()
 	local now = time()
 	local myName = UnitName("player")
 
-	ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][myName] = now
+	if ( ( ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][myName] == nil ) or
+	     ( ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][myName] > 0 ) ) then
+		ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][myName] = now
+	end
 
 	for name, lastLogin in pairs(ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName]) do
-		if ( now > (lastLogin + 60 * 60 * 24 * 31) ) then
-			ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][name] = nil
-		elseif ( name ~= myName ) then
+		if ( ( ClassicAutoComplete_MyChars[ClassicAutoComplete_realmName][name] >= 0 ) and
+		     ( name ~= myName ) ) then
 			ClassicAutoComplete_MyAlts[name] = 1
 		end
 	end
@@ -126,6 +238,9 @@ function ClassicAutoComplete_initialize()
 
 	SendMailNameEditBox:SetScript("OnTextChanged", nil)
 	SendMailNameEditBox:SetScript("OnChar", ClassicAutoComplete_OnChar)
+
+	SLASH_CLASSICAUTOCOMPLETE1 = "/autocomplete"
+	SlashCmdList["CLASSICAUTOCOMPLETE"] = ClassicAutoComplete_CommandHandler
 
 	DEFAULT_CHAT_FRAME:AddMessage(string.format("ClassicAutoComplete %i loaded.", ClassicAutoComplete_Version))
 end
