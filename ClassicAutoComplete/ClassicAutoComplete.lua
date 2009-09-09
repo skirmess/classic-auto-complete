@@ -245,15 +245,20 @@ local function initialize()
 	DEFAULT_CHAT_FRAME:AddMessage(string.format("ClassicAutoComplete %i loaded.", Version))
 end
 
-function ClassicAutoComplete_OnEvent(event, ...)
+local function EventHandler(self, event, ...)
 
 	if ( event == "ADDON_LOADED" ) then
 		local addon = ...
 		if (( addon ~= nil ) and ( addon == "ClassicAutoComplete" )) then
-			this:UnregisterEvent("ADDON_LOADED")
+			self:UnregisterEvent("ADDON_LOADED")
 
 			initialize()
 		end
 	end
 end
+
+-- main
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("ADDON_LOADED")
+frame:SetScript("OnEvent", EventHandler)
 

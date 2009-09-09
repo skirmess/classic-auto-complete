@@ -6,4 +6,4 @@
 ## OptionalDeps:
 ## Dependencies:
 ## X-Website: http://code.google.com/p/classic-auto-complete/
-ClassicAutoComplete.xml
+ClassicAutoComplete.lua

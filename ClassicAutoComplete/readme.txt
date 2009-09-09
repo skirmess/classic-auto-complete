@@ -31,6 +31,7 @@ The following commands exist
 
 Version 6
  * Stop leaking globals.
+ * No longer use an XML file.
 
 Version 5
  * You can now add, remove or block chars via a command line interface.
