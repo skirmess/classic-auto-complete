@@ -261,7 +261,7 @@ local function EventHandler(self, event, ...)
 		end
 
 		if ( Loaded and CalendarLoaded ) then
-			frame:UnregisterEvent("ADDON_LOADED")
+			self:UnregisterEvent("ADDON_LOADED")
 
 			CalendarCreateEventInviteEdit:SetScript("OnTextChanged", nil)
 			CalendarCreateEventInviteEdit:SetScript("OnChar", OnCharHandler)
