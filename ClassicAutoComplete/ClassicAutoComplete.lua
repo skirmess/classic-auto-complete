@@ -144,7 +144,7 @@ local function OnCharHandler(s)
 	)
 
 	if completedName then
-		completedNameRemainderPosition=s:GetCursorPosition()
+		completedNameRemainderPosition = s:GetCursorPosition()
 		s:SetText(completedName)
 		s:HighlightText(completedNameRemainderPosition, strlen(completedName))
 	end
