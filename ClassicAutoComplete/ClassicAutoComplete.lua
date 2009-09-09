@@ -5,7 +5,7 @@ local Version = 6
 local Loaded = false
 local CalendarLoaded = false
 
-local OrigGetAutoCompleteResults = nil
+ClassicAutoComplete_OrigGetAutoCompleteResults = nil
 local RealmName
 local MyAlts = { }
 
@@ -135,12 +135,12 @@ local function OnCharHandler(s)
 	end
 
 	local completedName = (
-		GetAutoCompleteAltResults(name) or
-		OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or
-		OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or
-		OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or
-		OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or
-		OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ALL, 0, 1)
+		ClassicAutoComplete_GetAutoCompleteAltResults(name) or
+		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or
+		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or
+		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or
+		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or
+		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ALL, 0, 1)
 	)
 
 	local completedNameRemainderPosition = s:GetCursorPosition()
@@ -156,12 +156,12 @@ end
 
 local function NewGetAutoCompleteResults(t, include, exclude, maxResults, ...)
 
-	local result = { OrigGetAutoCompleteResults(t, include, exclude, maxResults, ...) }
+	local result = { ClassicAutoComplete_OrigGetAutoCompleteResults(t, include, exclude, maxResults, ...) }
 
 	-- AUTOCOMPLETE_FLAG_FRIEND 	 0x00000004 	 Players on your friends list
 	local k, v, ik, iv
 	if ( IsBitSet(include, 3) ) then
-		for k, v in ipairs { GetAutoCompleteAltResults(t) } do
+		for k, v in ipairs { ClassicAutoComplete_GetAutoCompleteAltResults(t) } do
 			local found = 0
 			for ik, iv in ipairs(result) do
 				if ( v == iv ) then
@@ -186,7 +186,7 @@ local function NewGetAutoCompleteResults(t, include, exclude, maxResults, ...)
 	return unpack(result)
 end
 
-local function GetAutoCompleteAltResults(t)
+function ClassicAutoComplete_GetAutoCompleteAltResults(t)
 
 	local result = { }
 
@@ -234,7 +234,7 @@ local function initialize()
 		end
 	end
 
-	OrigGetAutoCompleteResults = GetAutoCompleteResults
+	ClassicAutoComplete_OrigGetAutoCompleteResults = GetAutoCompleteResults
 	GetAutoCompleteResults = NewGetAutoCompleteResults
 
 	SendMailNameEditBox:SetScript("OnTextChanged", nil)
