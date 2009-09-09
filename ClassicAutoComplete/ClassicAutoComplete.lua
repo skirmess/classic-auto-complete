@@ -143,8 +143,8 @@ local function OnCharHandler(s)
 		OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ALL, 0, 1)
 	)
 
+	local completedNameRemainderPosition = s:GetCursorPosition()
 	if completedName then
-		completedNameRemainderPosition = s:GetCursorPosition()
 		s:SetText(completedName)
 		s:HighlightText(completedNameRemainderPosition, strlen(completedName))
 	end
