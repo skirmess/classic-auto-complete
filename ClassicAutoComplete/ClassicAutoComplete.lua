@@ -3,6 +3,7 @@
 
 local Version = 5
 local Loaded = false
+local CalendarLoaded = false
 
 local OrigGetAutoCompleteResults = nil
 local RealmName
@@ -249,10 +250,21 @@ local function EventHandler(self, event, ...)
 
 	if ( event == "ADDON_LOADED" ) then
 		local addon = ...
-		if (( addon ~= nil ) and ( addon == "ClassicAutoComplete" )) then
-			self:UnregisterEvent("ADDON_LOADED")
-
+		if ( addon == nil ) then
+			return
+		end
+			
+		if ( addon == "ClassicAutoComplete" ) then
 			initialize()
+		elseif ( addon == "Blizzard_Calendar" ) then
+			CalendarLoaded = true
+		end
+
+		if ( Loaded and CalendarLoaded ) then
+			frame:UnregisterEvent("ADDON_LOADED")
+
+			CalendarCreateEventInviteEdit:SetScript("OnTextChanged", nil)
+			CalendarCreateEventInviteEdit:SetScript("OnChar", OnCharHandler)
 		end
 	end
 end
