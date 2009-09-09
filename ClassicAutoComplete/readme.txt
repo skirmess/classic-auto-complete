@@ -29,6 +29,9 @@ The following commands exist
 
 *** Changelog
 
+Version 6
+ * Stop leaking globals.
+
 Version 5
  * You can now add, remove or block chars via a command line interface.
  * /autocomplete add charname
