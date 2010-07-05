@@ -1,7 +1,7 @@
 
--- Copyright (c) 2009, Sven Kirmess
+-- Copyright (c) 2009-2010, Sven Kirmess
 
-local Version = 6
+local Version = 7
 local Loaded = false
 local CalendarLoaded = false
 

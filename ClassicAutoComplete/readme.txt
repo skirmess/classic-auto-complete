@@ -29,6 +29,9 @@ The following commands exist
 
 *** Changelog
 
+Version 7
+ * Updated TOC for WoW 3.3.5
+
 Version 6
  * Stop leaking globals.
  * No longer use an XML file.
