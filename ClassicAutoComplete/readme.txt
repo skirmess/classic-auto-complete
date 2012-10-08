@@ -29,6 +29,9 @@ The following commands exist
 
 *** Changelog
 
+Version 10
+ * Updated for MoP.
+
 Version 9
  * Updated TOC for WoW 4.3.0
 

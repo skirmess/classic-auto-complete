@@ -1,4 +1,4 @@
-## Interface: 40300
+## Interface: 50001
 ## Title: ClassicAutoComplete
 ## Author: Sven Kirmess
 ## Notes: Restores the classic auto complete functionality and adds your alts to the autocomplete list
