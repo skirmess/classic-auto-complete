@@ -29,6 +29,9 @@ The following commands exist
 
 *** Changelog
 
+Version 11
+ * Updated TOC for WoW 5.2.0
+
 Version 10
  * Updated for MoP.
 
