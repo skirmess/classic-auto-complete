@@ -29,6 +29,10 @@ The following commands exist
 
 *** Changelog
 
+Version 12
+ * Replaced GetCVar("realmName") with GetRealmName() (thanks danidaf)
+ * Updated TOC for WoW 5.4.0
+
 Version 11
  * Updated TOC for WoW 5.2.0
 

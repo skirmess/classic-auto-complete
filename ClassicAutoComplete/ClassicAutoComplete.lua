@@ -1,7 +1,7 @@
 
 -- Copyright (c) 2009-2013, Sven Kirmess
 
-local Version = 11
+local Version = 12
 local Loaded = false
 local CalendarLoaded = false
 
@@ -209,7 +209,7 @@ local function initialize()
 	end
 	Loaded = true
 
-	RealmName = GetCVar("realmName")
+	RealmName = GetRealmName()
 
 	if ( ClassicAutoComplete_MyChars == nil ) then
 		ClassicAutoComplete_MyChars = { }
