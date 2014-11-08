@@ -1,18 +1,11 @@
 
--- Copyright (c) 2009-2013, Sven Kirmess
+-- Copyright (c) 2009-2014, Sven Kirmess
 
-local Version = 12
+local Version = 13
 local Loaded = false
-local CalendarLoaded = false
 
-ClassicAutoComplete_OrigGetAutoCompleteResults = nil
 local RealmName
 local MyAlts = { }
-
--- http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html
-local function IsBitSet(x, p)
-	return x % (p + p) >= p
-end
 
 local function PrintableName(name)
 
@@ -53,6 +46,11 @@ local function SlashCommandHandler(msg, editbox)
 		tinsert(argument, v)
 	end
 
+	local connectedRealms = GetAutoCompleteRealms()
+	if ( connectedRealms == nil ) then
+		connectedRealms = { RealmName }
+	end
+
 	-- help
 	if ( argument[1] == "help" ) then
 		Usage()
@@ -63,14 +61,30 @@ local function SlashCommandHandler(msg, editbox)
 	-- list
 	if ( argument[1] == "list" ) then
 
-		for k, v in pairs(ClassicAutoComplete_MyChars[RealmName]) do
-			local s = ""
-			if ( v == 0 ) then
-				s = " (added)"
-			elseif ( v == -1 ) then
-				s = " (blocked)"
+		local alts = { }
+
+		for i = 1, #connectedRealms do
+
+			local realmSuffix = ""
+
+			if ( connectedRealms[i] == RealmName ) then
+				realmSuffix = "-" .. PrintableName(string.gsub(connectedRealms[i], "%s+", ""))
 			end
-			DEFAULT_CHAT_FRAME:AddMessage(string.format("%s%s", k, s))
+
+			for k, v in pairs(ClassicAutoComplete_MyChars[connectedRealms[i]]) do
+				local s = ""
+				if ( v == 0 ) then
+					s = "(added)"
+				elseif ( v == -1 ) then
+					s = "(blocked)"
+				end
+				tinsert(alts, string.format("%s%s %s", k, realmSuffix, s))
+			end
+		end
+
+		table.sort(alts)
+		for i = 1, #alts do
+			DEFAULT_CHAT_FRAME:AddMessage(string.format("%s", alts[i]))
 		end
 
 		return
@@ -82,6 +96,12 @@ local function SlashCommandHandler(msg, editbox)
 	if (( argument[1] == "add" ) or
 	    ( argument[1] == "block" ) or
 	    ( argument[1] == "remove" )) then
+
+		if ( string.match(argument[2], "-") ~= nil ) then
+			DEFAULT_CHAT_FRAME:AddMessage(string.format("%s", "You can only add, block and remove an alt from it's realm. Not from connected realms."))
+
+			return
+		end
 
 		local name = PrintableName(argument[2])
 		if ( name == nil ) then
@@ -134,72 +154,65 @@ local function OnCharHandler(s)
 		return
 	end
 
-	local completedName = (
-		ClassicAutoComplete_GetAutoCompleteAltResults(name) or
-		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or
-		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ONLINE + AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or
-		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_FRIEND, 0, 1) or
-		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_IN_GUILD, 0, 1) or
-		ClassicAutoComplete_OrigGetAutoCompleteResults(name, AUTOCOMPLETE_FLAG_ALL, 0, 1)
-	)
+	-- check if alts match
+	local completedName = nil
+	local result = { }
 
-	local completedNameRemainderPosition = s:GetCursorPosition()
-	if completedName then
+	local altName, v
+	for altName, v in pairs( MyAlts ) do
+		if ( ( strlen(name) <= strlen(altName) ) and ( string.lower(name) == string.sub(string.lower(altName), 1, strlen(name)) ) ) then
+			-- DEFAULT_CHAT_FRAME:AddMessage(string.format("alt match: %s -> %s", altName, name))
+			table.insert(result, 1, altName)
+		end
+	end
+
+	if ( #result > 0 ) then
+		table.sort(result)
+		completedName = result[1]
+	end
+
+	-- check if friends match
+	if ( completedName == nil ) then
+		local numFriends = GetNumFriends()
+		for iItem = 1, numFriends, 1 do
+			friend = GetFriendInfo(iItem)
+
+			if ( ( friend ) and ( strlen(name) <= strlen(friend) ) and ( string.lower(name) == string.sub(string.lower(friend), 1, strlen(name)) ) ) then
+				-- DEFAULT_CHAT_FRAME:AddMessage(string.format("friend match: %s -> %s", friend, name))
+				table.insert(result, 1, friend)
+			end
+		end
+
+		if ( #result > 0 ) then
+			table.sort(result)
+			completedName = result[1]
+		end
+	end
+
+	-- check if guild match
+	if ( completedName == nil ) then
+		local numGuildies = GetNumGuildMembers()
+		for iItem = 1, numGuildies, 1 do
+			guildie = GetGuildRosterInfo(iItem)
+
+			if ( ( guildie ) and ( strlen(name) <= strlen(guildie) ) and ( string.lower(name) == string.sub(string.lower(guildie), 1, strlen(name)) ) ) then
+				-- DEFAULT_CHAT_FRAME:AddMessage(string.format("guildie match: %s -> %s", guildie, name))
+				table.insert(result, 1, guildie)
+			end
+		end
+
+		if ( #result > 0 ) then
+			table.sort(result)
+			completedName = result[1]
+		end
+	end
+
+	if ( completedName ~= nil ) then
+		local completedNameRemainderPosition = s:GetCursorPosition()
+
 		s:SetText(completedName)
 		s:HighlightText(completedNameRemainderPosition, strlen(completedName))
 	end
-
-	-- to keep the new auto complete functionality
-	AutoComplete_Update(s, name, completedNameRemainderPosition)
-	SendMailFrame_Update()
-end
-
-local function NewGetAutoCompleteResults(t, include, exclude, maxResults, ...)
-
-	local result = { ClassicAutoComplete_OrigGetAutoCompleteResults(t, include, exclude, maxResults, ...) }
-
-	-- AUTOCOMPLETE_FLAG_FRIEND 	 0x00000004 	 Players on your friends list
-	local k, v, ik, iv
-	if ( IsBitSet(include, 3) ) then
-		for k, v in ipairs { ClassicAutoComplete_GetAutoCompleteAltResults(t) } do
-			local found = 0
-			for ik, iv in ipairs(result) do
-				if ( v == iv ) then
-					found = 1
-				end
-			end
-
-			if ( found == 0 ) then
-				table.insert(result, v)
-			end
-		end
-	end
-
-	table.sort(result)
-
-	local i = table.getn(result)
-	while ( i > maxResults ) do
-		table.remove(result)
-		i=i-1
-	end
-
-	return unpack(result)
-end
-
-function ClassicAutoComplete_GetAutoCompleteAltResults(t)
-
-	local result = { }
-
-	local text = string.lower(t)
-	local textlen = strlen(text)
-
-	for name, _ in pairs(MyAlts) do
-		if (( strlen(name) >= textlen ) and ( string.sub(string.lower(name), 1, textlen) == text )) then
-			table.insert(result, name)
-		end
-	end
-
-	return unpack(result)
 end
 
 local function initialize()
@@ -227,17 +240,32 @@ local function initialize()
 		ClassicAutoComplete_MyChars[RealmName][myName] = now
 	end
 
-	for name, lastLogin in pairs(ClassicAutoComplete_MyChars[RealmName]) do
-		if ( ( ClassicAutoComplete_MyChars[RealmName][name] >= 0 ) and
-		     ( name ~= myName ) ) then
-			MyAlts[name] = 1
+	local connectedRealms = GetAutoCompleteRealms()
+	if ( connectedRealms == nil ) then
+		connectedRealms = { RealmName }
+	end
+
+	for i = 1, #connectedRealms do
+		-- initialize database of connected realms
+		if ( ClassicAutoComplete_MyChars[connectedRealms[i]] == nil ) then
+			ClassicAutoComplete_MyChars[connectedRealms[i]] = { }
+		end
+
+		for name, lastLogin in pairs(ClassicAutoComplete_MyChars[connectedRealms[i]]) do
+			if ( ClassicAutoComplete_MyChars[connectedRealms[i]][name] >= 0 ) then
+				if ( connectedRealms[i] ~= RealmName ) then
+					MyAlts[name .. "-" .. connectedRealms[i]] = 1
+				elseif ( name ~= myName ) then
+					MyAlts[name] = 1
+				end
+			end
 		end
 	end
 
-	ClassicAutoComplete_OrigGetAutoCompleteResults = GetAutoCompleteResults
-	GetAutoCompleteResults = NewGetAutoCompleteResults
+	-- disable default auto complete drop down
+	SendMailNameEditBox.autoCompleteParams = nil
 
-	SendMailNameEditBox:SetScript("OnTextChanged", nil)
+	-- SendMailNameEditBox:SetScript("OnTextChanged", nil)
 	SendMailNameEditBox:SetScript("OnChar", OnCharHandler)
 
 	SLASH_CLASSICAUTOCOMPLETE1 = "/autocomplete"
@@ -249,28 +277,21 @@ end
 local function EventHandler(self, event, ...)
 
 	if ( event == "ADDON_LOADED" ) then
+
 		local addon = ...
 		if ( addon == nil ) then
 			return
 		end
-			
+
 		if ( addon == "ClassicAutoComplete" ) then
-			initialize()
-		elseif ( addon == "Blizzard_Calendar" ) then
-			CalendarLoaded = true
-		end
-
-		if ( Loaded and CalendarLoaded ) then
 			self:UnregisterEvent("ADDON_LOADED")
-
-			CalendarCreateEventInviteEdit:SetScript("OnTextChanged", nil)
-			CalendarCreateEventInviteEdit:SetScript("OnChar", OnCharHandler)
+			initialize()
 		end
 	end
 end
 
 -- main
 local frame = CreateFrame("Frame")
-frame:RegisterEvent("ADDON_LOADED")
 frame:SetScript("OnEvent", EventHandler)
+frame:RegisterEvent("ADDON_LOADED")
 

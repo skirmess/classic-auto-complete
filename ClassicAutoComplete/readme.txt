@@ -3,14 +3,11 @@ ClassicAutoComplete
 
 Restores the classic auto complete functionality of the send mail frame and adds your alts to the list used for auto completion. 
 
-Restores the classic auto complete functionality but leaves the new drop down menu in place. While you type, the add-on searches for the first match in the following order:
+While you type, the add-on searches for the first match in the following order:
 
  * One of your alts
- * One of your friends who is online
- * One of your guildies who is online
- * One of your friends who is offline
- * One of your guildies who is offline
- * Someone you interacted with
+ * One of your friends
+ * One of your guildies
 
 The autocompleted text will be grayed out so if you continue typing the text is overwritten and the search is refined.
 
@@ -28,6 +25,12 @@ The following commands exist
    Lists your alt list.
 
 *** Changelog
+
+Version 13
+ * Added support for connected realms.
+ * Removed the default drop down in the mail recipient field
+ * Removed calendar support.
+ * Updated TOC for WoW 6.0.0
 
 Version 12
  * Replaced GetCVar("realmName") with GetRealmName() (thanks danidaf)
