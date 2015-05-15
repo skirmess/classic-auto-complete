@@ -26,6 +26,11 @@ The following commands exist
 
 *** Changelog
 
+Version 14
+ * Updated TOC for WoW 6.1.0
+ * Changed project web page to GitHub
+   https://github.com/skirmess/classic-auto-complete
+
 Version 13
  * Added support for connected realms.
  * Removed the default drop down in the mail recipient field

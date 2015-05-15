@@ -1,9 +1,9 @@
-## Interface: 60000
+## Interface: 60100
 ## Title: ClassicAutoComplete
 ## Author: Sven Kirmess
 ## Notes: Restores the classic auto complete functionality and adds your alts to the autocomplete list
 ## SavedVariables: ClassicAutoComplete_MyChars
 ## OptionalDeps:
 ## Dependencies:
-## X-Website: http://code.google.com/p/classic-auto-complete/
+## X-Website: https://github.com/skirmess/classic-auto-complete
 ClassicAutoComplete.lua
